@@ -1,0 +1,38 @@
+name: Build IPA
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Unzip source
+        run: |
+          unzip *.zip
+
+      - name: Build
+        run: |
+          PROJECT=$(find . -name "*.xcodeproj" | head -n 1)
+          SCHEME=$(xcodebuild -list -project "$PROJECT" | grep -A1 Schemes | tail -n 1)
+
+          xcodebuild \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -sdk iphoneos \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Package
+        run: |
+          APP=$(find . -name "*.app" | head -n 1)
+          mkdir Payload
+          cp -R "$APP" Payload/
+          zip -r Qmusic.ipa Payload
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: IPA
+          path: Qmusic.ipa
