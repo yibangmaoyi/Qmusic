@@ -13,16 +13,22 @@ jobs:
         run: |
           unzip *.zip
 
-      - name: List schemes (debug)
+      - name: Build
         run: |
-          set -euxo pipefail
           PROJECT=$(find . -name "*.xcodeproj" | head -n 1)
-          echo "PROJECT=$PROJECT"
-          xcodebuild -list -project "$PROJECT"
+          SCHEME=$(xcodebuild -list -project "$PROJECT" | grep -A1 Schemes | tail -n 1 | xargs)
+
+          xcodebuild \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO
 
       - name: Package
         run: |
-          APP=$(find . -name "*.app" | head -n 1)
+          APP=$(find build -name "*.app" | head -n 1)
           mkdir Payload
           cp -R "$APP" Payload/
           zip -r Qmusic.ipa Payload
