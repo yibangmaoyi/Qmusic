@@ -13,17 +13,12 @@ jobs:
         run: |
           unzip *.zip
 
-      - name: Build
+      - name: List schemes (debug)
         run: |
+          set -euxo pipefail
           PROJECT=$(find . -name "*.xcodeproj" | head -n 1)
-          SCHEME=$(xcodebuild -list -project "$PROJECT" | grep -A1 Schemes | tail -n 1)
-
-          xcodebuild \
-            -project "$PROJECT" \
-            -scheme "$SCHEME" \
-            -configuration Release \
-            -sdk iphoneos \
-            CODE_SIGNING_ALLOWED=NO
+          echo "PROJECT=$PROJECT"
+          xcodebuild -list -project "$PROJECT"
 
       - name: Package
         run: |
